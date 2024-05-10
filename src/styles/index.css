@@ -1,0 +1,160 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Pretendard Variable';
+  font-weight: 45 920;
+  font-style: normal;
+  font-display: swap;
+  src: url('./font/PretendardVariable.woff2') format('woff2-variations');
+}
+
+@layer {
+  body {
+    font-family:
+      'Pretendard Variable',
+      Pretendard,
+      -apple-system,
+      BlinkMacSystemFont,
+      system-ui,
+      Roboto,
+      'Helvetica Neue',
+      'Segoe UI',
+      'Apple SD Gothic Neo',
+      'Noto Sans KR',
+      'Malgun Gothic',
+      'Apple Color Emoji',
+      'Segoe UI Emoji',
+      'Segoe UI Symbol',
+      sans-serif;
+  }
+  body.scroll-hidden {
+    @apply overflow-hidden;
+  }
+  div {
+    @apply scrollbar-hide;
+  }
+
+  /* Calendar css start ==================  */
+  .react-datepicker__input-container input {
+    @apply block w-full text-base bg-white border border-gray-300 rounded shadow-sm;
+  }
+
+  .react-datepicker__aria-live {
+    @apply hidden;
+  }
+
+  .react-datepicker__input-container {
+    @apply hidden;
+  }
+
+  .react-datepicker-popper {
+    @apply z-50 w-[320px] text-sm bg-white shadow pt-5  border-2 border-gray-200 rounded-2xl;
+  }
+
+  .react-datepicker__triangle {
+    @apply invisible;
+  }
+
+  .react-datepicker__month-container {
+    @apply flex flex-col;
+  }
+
+  .react-datepicker__month {
+    @apply flex flex-col;
+  }
+
+  .react-datepicker__current-month {
+    @apply ml-2.5 text-lg font-semibold text-gray-800;
+  }
+
+  .react-datepicker__week {
+    @apply flex justify-around;
+  }
+
+  .react-datepicker__day-names {
+    @apply flex justify-around  text-center text-[14px] text-black;
+  }
+
+  .react-datepicker__day-name {
+    @apply w-8 h-8 flex items-center justify-center py-1;
+  }
+
+  .react-datepicker__day {
+    @apply mb-1 w-8 h-8 flex items-center justify-center py-1 text-sm leading-loose transition text-gray-700 rounded;
+  }
+
+  .react-datepicker__day--disabled {
+    @apply cursor-not-allowed opacity-40 hover:bg-transparent;
+  }
+
+  span .react-datepicker__aria-live {
+    @apply invisible;
+  }
+
+  .react-datepicker__day--outside-month {
+    @apply text-gray-300;
+  }
+
+  .react-datepicker__day {
+    @apply w-11 h-10 cursor-pointer text-[14px];
+  }
+
+  .react-datepicker__day--selected {
+    @apply flex justify-center items-center bg-black text-white rounded-full;
+  }
+
+  .react-datepicker__day--highlighted-today {
+    @apply font-bold;
+  }
+
+  /* Calendar css end ==================  */
+
+  /* Drawer Animations css start*/
+  @keyframes slideIn {
+    from {
+      transform: translateY(100%);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideOut {
+    from {
+      transform: translateY(0);
+    }
+    to {
+      transform: translateY(100%);
+    }
+  }
+
+  .drawerSlideIn {
+    animation: slideIn 0.3s forwards;
+  }
+
+  .drawerSlideOut {
+    animation: slideOut 0.2s forwards;
+  }
+  /* DrawerAnimations css end*/
+}
+
+@layer components {
+  .flexCol {
+    @apply flex flex-col;
+  }
+  .flexRowCenter {
+    @apply flex justify-center items-center;
+  }
+  .flexColCenter {
+    @apply flexCol justify-center items-center;
+  }
+}
+
+@layer utilities {
+  .mask-gradient {
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 50%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 50%, transparent 100%);
+  }
+}
