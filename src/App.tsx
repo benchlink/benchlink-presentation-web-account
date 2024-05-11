@@ -1,5 +1,7 @@
+import BenchlinkRouter from "./components/shared/BenchlinkRouter";
+
 function App() {
-	return <div></div>;
+	return <BenchlinkRouter />;
 }
 
 export default App;
