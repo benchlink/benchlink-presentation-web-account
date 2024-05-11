@@ -2,12 +2,14 @@ import { useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import LogoIcon from "@/assets/icons/benchlink-logo.svg?react";
 import FormItem from "@/components/shared/FormItem";
 import Button from "@/components/shared/atoms/Button";
 import Input from "@/components/shared/atoms/Input";
 import Typography from "@/components/shared/atoms/Typography";
 import { ApiStatus } from "@/api/types/@shared";
+import { AuthService } from "@/api/types/Auth";
+import { AxiosError } from "axios";
+import { VERIFY_EMAIL } from "@/api/client";
 
 const emailFormSchema = z.object({
 	email: z
@@ -22,40 +24,6 @@ const DeleteAccount = () => {
 	const [apiStatus, setApiStatus] = useState<ApiStatus>("idle");
 	const [requestDelete, setRequestDelete] = useState(false);
 
-	// const mockPasswordUpdateRequestStatus = async (uuid: string) => {
-	// 	try {
-	// 		setApiStatus("loading");
-	// 		const result = await AuthService.patchPasswordUpdateRequestStatus({
-	// 			uuid,
-	// 		});
-	// 		if (!result.requestId) {
-	// 			throw new Error();
-	// 		}
-
-	// 		const emailVerifiedeResult =
-	// 			await AuthService.getRequestNewPasswordVerificationStatus({
-	// 				uuid,
-	// 			});
-
-	// 		if (!emailVerifiedeResult.id) {
-	// 			throw new Error("Email verification failed");
-	// 		}
-	// 		setApiStatus("succeeded");
-	// 		// navigate('/signin/forgot-password/enter-new-password');
-	// 	} catch (error) {
-	// 		if (error instanceof AxiosError && error.status === 406) {
-	// 			// Error 처리
-	// 			console.error("BenchlinkResponse 리턴. 잘못된/확인되지 않은 이메일");
-	// 			console.error(error);
-	// 		}
-	// 		setApiStatus("failed");
-	// 	}
-	// };
-	// useEffect(() => {
-	// 	if (uuid) {
-	// 		mockPasswordUpdateRequestStatus(uuid);
-	// 	}
-	// }, [uuid]);
 	const {
 		handleSubmit,
 		register,
@@ -77,36 +45,28 @@ const DeleteAccount = () => {
 		try {
 			setApiStatus("loading");
 			console.log({ email });
-			// const result = await NetworkService.getHostByInviteCode({ inviteCode });
+			const result = await AuthService.postVerifyEmail({ email });
 
-			// if (!result.host) {
-			// 	throw new Error("invalid invitation code");
-			// }
+			if (!result.requestId) {
+				throw new Error("Can't find email");
+			}
 
-			// setHost({
-			// 	id: result.host.id,
-			// 	firstName: result.host.firstName,
-			// 	lastName: result.host.lastName,
-			// 	credentials: result.host.credentials,
-			// 	inviteCode,
-			// });
+			localStorage.setItem(VERIFY_EMAIL, JSON.stringify(result.requestId));
 
-			// setApiStatus("succeeded");
-			// setHostInfoDrawerOpen(true);
+			setApiStatus("succeeded");
 			setRequestDelete(true);
 		} catch (error) {
+			// TODO: check if this error code is valid
+			if (error instanceof AxiosError && error.response?.status === 409) {
+				setError("email", { message: "This account does not exist" });
+			}
 			setApiStatus("failed");
-			setError("email", { message: "This account does not exist" });
+			console.log({ error });
 		}
 	};
 
 	return (
-		<div className="overflow-hidden" style={{ height: "100dvh" }}>
-			<header className="bg-[#000000]">
-				<div className="h-[58px] max-w-[694px] px-4  flex items-center justify-between mx-auto">
-					<LogoIcon width={123} />
-				</div>
-			</header>
+		<>
 			<div
 				className="flexCol items-center  px-5 mt-5 gap-6"
 				style={{ height: `calc(100dvh - 58px)` }}
@@ -152,7 +112,7 @@ const DeleteAccount = () => {
 					</>
 				)}
 			</div>
-		</div>
+		</>
 	);
 };
 

@@ -1,13 +1,16 @@
 import { ApiStatus } from "@/api/types/@shared";
-import LogoIcon from "@/assets/icons/benchlink-logo.svg?react";
+import PageNotFoundIcon from "@/assets/icons/page-not-found.svg?react";
 import FormItem from "@/components/shared/FormItem";
 import Button from "@/components/shared/atoms/Button";
 import Typography from "@/components/shared/atoms/Typography";
 import Input from "@/components/shared/atoms/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
+import { useParams } from "react-router-dom";
+import { AuthService } from "@/api/types/Auth";
+import { AxiosError } from "axios";
 
 const passwordFormSchema = z.object({
 	password: z
@@ -18,43 +21,28 @@ const passwordFormSchema = z.object({
 export type PasswordFormValues = z.infer<typeof passwordFormSchema>;
 
 const ConfirmPassword = () => {
+	const { uuid } = useParams<{ uuid: string }>();
 	const [apiStatus, setApiStatus] = useState<ApiStatus>("idle");
 	const [isDeleted, setIsDeleted] = useState(false);
+	const [canVerifyPassword, setCanVerifyPassword] = useState(false);
 
-	// const mockPasswordUpdateRequestStatus = async (uuid: string) => {
-	// 	try {
-	// 		setApiStatus("loading");
-	// 		const result = await AuthService.patchPasswordUpdateRequestStatus({
-	// 			uuid,
-	// 		});
-	// 		if (!result.requestId) {
-	// 			throw new Error();
-	// 		}
+	useEffect(() => {
+		if (uuid) {
+			(async () => {
+				try {
+					const result = await AuthService.getVerifyEmailStatus({ uuid });
+					if (!result.isVerified) {
+						throw new Error("Email not verified");
+					}
+					setCanVerifyPassword(true);
+				} catch (error) {
+					setCanVerifyPassword(false);
+					console.log({ error });
+				}
+			})();
+		}
+	}, []);
 
-	// 		const emailVerifiedeResult =
-	// 			await AuthService.getRequestNewPasswordVerificationStatus({
-	// 				uuid,
-	// 			});
-
-	// 		if (!emailVerifiedeResult.id) {
-	// 			throw new Error("Email verification failed");
-	// 		}
-	// 		setApiStatus("succeeded");
-	// 		// navigate('/signin/forgot-password/enter-new-password');
-	// 	} catch (error) {
-	// 		if (error instanceof AxiosError && error.status === 406) {
-	// 			// Error 처리
-	// 			console.error("BenchlinkResponse 리턴. 잘못된/확인되지 않은 이메일");
-	// 			console.error(error);
-	// 		}
-	// 		setApiStatus("failed");
-	// 	}
-	// };
-	// useEffect(() => {
-	// 	if (uuid) {
-	// 		mockPasswordUpdateRequestStatus(uuid);
-	// 	}
-	// }, [uuid]);
 	const {
 		handleSubmit,
 		register,
@@ -74,72 +62,76 @@ const ConfirmPassword = () => {
 		password,
 	}) => {
 		try {
+			if (!uuid) {
+				throw new Error("Id not found");
+			}
+
 			setApiStatus("loading");
-			console.log({ password });
-			// const result = await NetworkService.getHostByInviteCode({ inviteCode });
 
-			// if (!result.host) {
-			// 	throw new Error("invalid invitation code");
-			// }
+			const result = await AuthService.patchVerifyEmailStatus({
+				password,
+				uuid,
+			});
 
-			// setHost({
-			// 	id: result.host.id,
-			// 	firstName: result.host.firstName,
-			// 	lastName: result.host.lastName,
-			// 	credentials: result.host.credentials,
-			// 	inviteCode,
-			// });
+			if (!result.requestId) {
+				throw new Error("Delete account failed");
+			}
 
-			// setApiStatus("succeeded");
-			// setHostInfoDrawerOpen(true);
+			setApiStatus("succeeded");
 			setIsDeleted(true);
 		} catch (error) {
+			if (error instanceof AxiosError && error.response?.status === 401) {
+				setError("password", { message: "Invalid password" });
+			}
+			console.log({ error });
 			setApiStatus("failed");
-			setError("password", { message: "Invalid password" });
 		}
 	};
 
-	return (
-		<div className="overflow-hidden" style={{ height: "100dvh" }}>
-			<header className="bg-[#000000]">
-				<div className="h-[58px] max-w-[694px] px-4  flex items-center justify-between mx-auto">
-					<LogoIcon width={123} />
-				</div>
-			</header>
-			<div
-				className="flexCol items-center  px-5 mt-5 gap-6"
-				style={{ height: `calc(100dvh - 58px)` }}
-			>
-				{isDeleted ? (
-					<Typography type="h2">Your Benchlink account is deleted</Typography>
-				) : (
-					<>
-						<Typography type="h2">
-							Please enter your account password for xxx@gmail.com
-						</Typography>
-						<form
-							onSubmit={handleSubmit(handleFormSubmit)}
-							className="w-full space-y-5"
-						>
-							<FormItem
-								label="Password"
-								error={errors.password?.message}
-								required
-								initialFocus
-							>
-								<Input {...register("password")} />
-							</FormItem>
-							<div className="w-full bg-white outline-none text-center">
-								<Button
-									value="Delete Account"
-									disabled={btnDisabled}
-									loading={apiStatus === "loading"}
-								/>
-							</div>
-						</form>
-					</>
-				)}
+	if (!canVerifyPassword) {
+		return (
+			<div className="flexColCenter gap-[2px] h-[calc(100vh-58px)]">
+				<PageNotFoundIcon />
+				<Typography type="h2">Oops!</Typography>
+				<Typography type="caption1">Page not found</Typography>
 			</div>
+		);
+	}
+
+	return (
+		<div
+			className="flexCol items-center  px-5 mt-5 gap-6"
+			style={{ height: `calc(100dvh - 58px)` }}
+		>
+			{isDeleted ? (
+				<Typography type="h2">Your Benchlink account is deleted</Typography>
+			) : (
+				<>
+					<Typography type="h2">
+						Please enter your account password for xxx@gmail.com
+					</Typography>
+					<form
+						onSubmit={handleSubmit(handleFormSubmit)}
+						className="w-full space-y-5"
+					>
+						<FormItem
+							label="Password"
+							error={errors.password?.message}
+							required
+							initialFocus
+						>
+							<Input {...register("password")} />
+						</FormItem>
+						<div className="w-full bg-white outline-none text-center">
+							<Button
+								value="Delete Account"
+								disabled={btnDisabled}
+								loading={apiStatus === "loading"}
+							/>
+						</div>
+					</form>
+				</>
+			)}
 		</div>
 	);
 };
