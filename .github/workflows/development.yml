@@ -1,0 +1,60 @@
+name: React S3 Deployment
+
+on:
+  push:
+    branches: ["staging"]
+
+jobs:
+  buildAndDeploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+
+      - run: yarn install --frozen-lockfile
+
+      - name: Create .env file to ./dist folder
+        run: echo "VITE_BENCHLINK_API_URL="${{ secrets.API_URL_DEV }} > ./.env
+
+
+      - name: build files
+        working-directory: ./
+        run: yarn build
+
+      - name: Create .well-known directory
+        run: mkdir -p ./dist/.well-known
+        
+      - name: Create assetlinks.json
+        run: echo '${{ secrets.ASSET_LINKS_JSON_DEV }}' > ./dist/.well-known/assetlinks.json
+
+      - name: aws setting
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_DEV }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_DEV }}
+          aws-region: ap-northeast-2
+      
+      - name: Deploy to S3
+        run: aws s3 sync ./dist/ s3://${{ secrets.AWS_BUCKET_NAME_DEV }} --delete
+
+      - name: CloudFront Invalidation
+        env:
+          CLOUD_FRONT_ID: ${{ secrets.AWS_CLOUDFRONT_ID_DEV }}
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id $CLOUD_FRONT_ID --paths "/*"
+
+      - name: Send custom JSON data to Slack workflow
+        id: slack
+        uses: slackapi/slack-github-action@v1.26.0
+        with:
+          payload: |
+            {"text": "Staging release successful"}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+     
+          
