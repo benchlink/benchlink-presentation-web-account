@@ -1,8 +1,10 @@
 import viteLegacyPlugin from "@vitejs/plugin-legacy";
 import react from "@vitejs/plugin-react";
 import { defineConfig, splitVendorChunkPlugin } from "vite";
+
 import svgr from "vite-plugin-svgr";
 import tsconfigPaths from "vite-tsconfig-paths";
+import {viteSingleFile} from "vite-plugin-singlefile";
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -44,10 +46,21 @@ export default defineConfig({
 			//  or
 			modernPolyfills: true,
 		}),
+		viteSingleFile({ useRecommendedBuildConfig: false })
 	],
 	server: {
 		host: true,
 		open: true,
 		port: 3000,
+	},
+	build: {
+		cssCodeSplit: false,
+		rollupOptions: {
+			output: {
+				manualChunks: undefined,
+				inlineDynamicImports: false,
+				format: "iife"
+			},
+		},
 	},
 });

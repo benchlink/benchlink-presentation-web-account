@@ -8,7 +8,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useParams } from "react-router-dom";
 import { AuthService } from "@/api/types/Auth";
 import { AxiosError } from "axios";
 
@@ -19,12 +18,18 @@ const passwordFormSchema = z.object({
 });
 
 export type PasswordFormValues = z.infer<typeof passwordFormSchema>;
+interface Props {
+	uuid: string
+}
 
-const ConfirmPassword = () => {
-	const { uuid } = useParams<{ uuid: string }>();
+const ConfirmPassword = ({uuid}: Props) => {
 	const [apiStatus, setApiStatus] = useState<ApiStatus>("idle");
 	const [isDeleted, setIsDeleted] = useState(false);
 	const [canVerifyPassword, setCanVerifyPassword] = useState(false);
+
+	if (uuid === '') {
+		location.href = '/'
+	}
 
 	useEffect(() => {
 		if (uuid) {

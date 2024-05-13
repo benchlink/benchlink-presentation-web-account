@@ -1,5 +1,4 @@
 import { PropsWithChildren } from "react";
-import { Outlet } from "react-router-dom";
 import LogoIcon from "@/assets/icons/benchlink-logo.svg?react";
 
 const Layout = ({ children }: PropsWithChildren) => {
@@ -14,7 +13,6 @@ const Layout = ({ children }: PropsWithChildren) => {
 				</div>
 			</header>
 			{children}
-			<Outlet />
 		</div>
 	);
 };

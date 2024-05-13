@@ -1,23 +1,17 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import ScrollToTop from "../ScrollToTop";
-import DeleteAccount from "@/pages/DeleteAccount";
 import ConfirmPassword from "@/pages/DeleteAccount/ConfirmPassword";
-import Layout from "../Layout";
+import DeleteAccount from "@/pages/DeleteAccount";
 
 const BenchlinkRouter = () => {
-	return (
-		<BrowserRouter>
-			<ScrollToTop />
-			<Routes>
-				<Route path="/delete-account" element={<Layout />}>
-					<Route element={<DeleteAccount />} index />
-					<Route path=":uuid" element={<ConfirmPassword />} />
-				</Route>
+	const urlParams = new URLSearchParams(window.location.search);
+	const uuid = urlParams.get('uuid') ?? '';
 
-				<Route path="/" element={<Navigate to="/delete-account" replace />} />
-				<Route path="*" element={<Navigate to="/delete-account" replace />} />
-			</Routes>
-		</BrowserRouter>
+	return (
+		<div
+			className="w-full h-full flexCol bg-white"
+			style={{height: "100dvh"}}
+		>
+			{uuid? <ConfirmPassword uuid={uuid}/>:<DeleteAccount/>}
+		</div>
 	);
 };
 
