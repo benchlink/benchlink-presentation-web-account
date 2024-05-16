@@ -3,15 +3,14 @@ import { AxiosError, AxiosResponse } from "axios";
 
 export type Nullable<T> = T | null | undefined;
 
-export type Pagination = {
+export interface Pagination {
 	page: number;
 	size: number;
-};
+}
 
-export type CommonResponse = {
-	id: number;
-	sortKey: number;
-};
+export interface CommonResponse {}
+
+export interface CommonRequest {}
 
 export interface AxiosResData<T = any> {
 	statusCode: number;
