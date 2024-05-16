@@ -121,7 +121,7 @@ const ConfirmPassword = ({uuid}: Props) => {
                             required
                             initialFocus
                         >
-                            <Input {...register("password")} />
+                            <Input {...register("password")} type="password"/>
                         </FormItem>
                         <div className="w-full bg-white outline-none text-center">
                             <Button

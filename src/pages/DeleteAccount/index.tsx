@@ -103,7 +103,7 @@ const DeleteAccount = () => {
                                 required
                                 initialFocus
                             >
-                                <Input {...register("email")} type="password"/>
+                                <Input {...register("email")} type="email"/>
                             </FormItem>
                             <div className="w-full bg-white outline-none text-center">
                                 <Button
