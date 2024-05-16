@@ -1,24 +1,27 @@
-export type PostVerifyEmailResponse = {
-	requestId: string;
-};
+import {CommonRequest, CommonResponse} from "@/api/types/@shared.ts";
 
-export type PostVerifyEmailPayload = {
-	email: string;
-};
+export interface PostVerifyEmailResponse {
+    requestId: string
+}
 
-export type GetVerifyEmailStatusParams = {
-	uuid: string;
-};
+export interface PostVerifyEmailPayload extends CommonRequest {
+    email: string
+}
 
-export type GetVerifyEmailStatusResponse = {
-	id: string;
-	email: string;
-	isVerified: boolean;
-};
+export interface PatchVerifyEmailStatusResponse extends PostVerifyEmailResponse {
+}
 
-export type PatchVerifyEmailStatusPayload = {
-	uuid: string;
-	password: string;
-};
+export interface GetVerifyEmailStatusRequest extends CommonRequest {
+    uuid: string
+}
 
-export type PatchVerifyEmailStatusResponse = PostVerifyEmailResponse;
+export interface GetVerifyEmailStatusResponse extends CommonResponse {
+    id: string;
+    email: string
+    isVerified: boolean
+}
+
+export interface PatchVerifyEmailStatusPayload extends CommonRequest {
+    uuid: string
+    password: string
+}
