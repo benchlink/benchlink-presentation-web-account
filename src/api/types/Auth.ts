@@ -1,14 +1,24 @@
-import { axiosInstance } from "../client";
-import { AuthClient } from "../services/Auth";
-
-export const AuthService: AuthClient = {
-	postVerifyEmail: async (payload) => {
-		return await axiosInstance.post(`/member/verify/email/v1`, payload);
-	},
-	getVerifyEmailStatus: async ({ uuid }) => {
-		return await axiosInstance.get(`/member/verify/email/v1?uuid=${uuid}`);
-	},
-	patchVerifyEmailStatus: async (payload) => {
-		return await axiosInstance.patch(`/member/verify/email/v1`, payload);
-	},
+export type PostVerifyEmailResponse = {
+	requestId: string;
 };
+
+export type PostVerifyEmailPayload = {
+	email: string;
+};
+
+export type GetVerifyEmailStatusParams = {
+	uuid: string;
+};
+
+export type GetVerifyEmailStatusResponse = {
+	id: string;
+	email: string;
+	isVerified: boolean;
+};
+
+export type PatchVerifyEmailStatusPayload = {
+	uuid: string;
+	password: string;
+};
+
+export type PatchVerifyEmailStatusResponse = PostVerifyEmailResponse;
