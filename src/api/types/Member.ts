@@ -1,10 +1,8 @@
-import {CommonRequest, CommonResponse} from "@/api/types/@shared.ts";
-
-export interface DeleteMemberPayload extends CommonRequest {
+export type DeleteMemberPayload = {
 	verificationId: string;
 	email: string;
-}
+};
 
-export interface DeleteMemberResponse extends CommonResponse {
+export type DeleteMemberResponse = {
 	isDeleted: boolean
-}
+};
