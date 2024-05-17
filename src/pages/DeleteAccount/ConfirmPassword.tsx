@@ -10,6 +10,7 @@ import {SubmitHandler, useForm} from "react-hook-form";
 import {z} from "zod";
 import {AuthClient} from "@/api/services/Auth";
 import {AxiosError} from "axios";
+import MemberService from "@/api/services/Member.ts";
 
 const passwordFormSchema = z.object({
     password: z
@@ -42,7 +43,7 @@ const ConfirmPassword = ({uuid}: Props) => {
                 setCanVerifyPassword(true);
             })();
         }
-    }, []);
+    }, [uuid]);
 
     const {
         handleSubmit,
@@ -59,32 +60,69 @@ const ConfirmPassword = ({uuid}: Props) => {
 
     const btnDisabled = Object.keys(errors).length > 0 || !isValid;
 
-    const handleFormSubmit: SubmitHandler<PasswordFormValues> = async ({
-                                                                           password,
-                                                                       }) => {
+    const handleFormSubmit: SubmitHandler<PasswordFormValues>
+        = async ({
+                     password,
+                 }) => {
+
+        if (!uuid) {
+            throw new Error("Can't find ID");
+        }
+
+        setApiStatus("loading");
         try {
-            if (!uuid) {
-                throw new Error("Id not found");
+            const [{email}, {requestId}] = await Promise.all([
+                AuthClient.getVerifyEmailStatus({uuid}),
+                AuthClient.patchVerifyEmailStatus({
+                    password,
+                    uuid,
+                })
+            ])
+
+            if (!requestId) {
+                setError("password", {message: "This code is already expired or password is wrong"})
+                setApiStatus("failed");
+                return
+            } else if (!email) {
+                setError("password", {message: "This code is already expired or cannot find email anymore"})
+                setApiStatus("failed");
+                return
             }
 
-            setApiStatus("loading");
-
-            const result = await AuthClient.patchVerifyEmailStatus({
-                password,
-                uuid,
+            const {isDeleted} = await MemberService.deleteMember({
+                email,
+                verificationId: requestId
             });
 
-            if (!result.requestId) {
-                throw new Error("Delete account failed");
+            if (!isDeleted) {
+                setError("password", {message: "Please check your password or if verification code is expired"})
+                setApiStatus("failed");
             }
 
-            setApiStatus("succeeded");
+
             setIsDeleted(true);
+            setApiStatus("succeeded");
         } catch (error) {
-            if (error instanceof AxiosError && error.response?.status === 401) {
-                setError("password", {message: "Invalid password"});
+            const statusCode = (error as AxiosError)?.response?.status
+            switch (statusCode) {
+                case(400):
+                    setError("password", {message: "Invalid uuid"});
+                    break;
+                case(401):
+                    setError("password", {message: "Invalid password"});
+                    break;
+                case(406):
+                    setError("password", {message: "Invalid email"});
+                    break;
+                case(412):
+                    setError("password", {message: "Token has been expired"});
+                    break;
+                case(417):
+                    setError("password", {message: "Invalid token"});
+                    break;
+                default:
+                    setError("password", {message: "Failed with unknown reason"})
             }
-            console.log({error});
             setApiStatus("failed");
         }
     };

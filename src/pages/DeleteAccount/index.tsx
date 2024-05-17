@@ -9,7 +9,6 @@ import Typography from "@/components/shared/atoms/Typography";
 import {ApiStatus} from "@/api/types/@shared";
 import AuthService from "@/api/services/Auth";
 import {AxiosError} from "axios";
-import MemberService from "@/api/services/Member";
 
 const emailFormSchema = z.object({
     email: z
@@ -49,14 +48,6 @@ const DeleteAccount = () => {
             if (!verifyEmailResponse.requestId) {
                 throw new Error("Can't find email");
             }
-
-
-            const {isDeleted} = await MemberService.deleteMember({email, verificationId: verifyEmailResponse.requestId});
-
-            if (!isDeleted) {
-                throw new Error("Failed to delete")
-            }
-
             setApiStatus("succeeded");
             setRequestDelete(true);
         } catch (error) {
