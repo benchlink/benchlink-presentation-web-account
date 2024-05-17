@@ -27,23 +27,10 @@ interface Props {
 const ConfirmPassword = ({uuid}: Props) => {
     const [apiStatus, setApiStatus] = useState<ApiStatus>("idle");
     const [isDeleted, setIsDeleted] = useState(false);
-    const [canVerifyPassword, setCanVerifyPassword] = useState(false);
 
     if (uuid === '') {
         location.href = '/'
     }
-
-    useEffect(() => {
-        if (uuid) {
-            (async () => {
-                const result = await AuthClient.getVerifyEmailStatus({uuid});
-                if (!result.isVerified) {
-                    setCanVerifyPassword(false);
-                }
-                setCanVerifyPassword(true);
-            })();
-        }
-    }, [uuid]);
 
     const {
         handleSubmit,
@@ -66,7 +53,9 @@ const ConfirmPassword = ({uuid}: Props) => {
                  }) => {
 
         if (!uuid) {
-            throw new Error("Can't find ID");
+            setError("password", {message: "Can't find ID"})
+            setApiStatus("failed");
+            return
         }
 
         setApiStatus("loading");
@@ -126,16 +115,6 @@ const ConfirmPassword = ({uuid}: Props) => {
             setApiStatus("failed");
         }
     };
-
-    if (!canVerifyPassword) {
-        return (
-            <div className="flexColCenter gap-[2px] h-[calc(100vh-58px)]">
-                <PageNotFoundIcon/>
-                <Typography type="h2">Oops!</Typography>
-                <Typography type="caption1">Page not found</Typography>
-            </div>
-        );
-    }
 
     return (
         <div

@@ -17,7 +17,7 @@ class AuthService {
 	}
 	getVerifyEmailStatus(payload: GetVerifyEmailStatusRequest) {
 		if(payload.uuid)
-			return axiosInstance.get<GetVerifyEmailStatusResponse>(`/member/verify/email/v1`, {uuid: payload.uuid});
+			return axiosInstance.get<GetVerifyEmailStatusResponse>(`/member/verify/email/v1?uuid=${payload.uuid}`, {uuid: payload.uuid});
 		else
 			throw new Error('Invalid Request')
 	}
