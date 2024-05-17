@@ -8,7 +8,7 @@ import Singleton from "@/decorators/Singleton.ts";
 @Singleton
 class MemberService {
     deleteMember(payload: DeleteMemberPayload) {
-        return axiosInstance.delete<DeleteMemberResponse>(`/member/verify/email/v1`, payload);
+        return axiosInstance.delete<DeleteMemberResponse>(`/member/v1`, payload);
     }
 }
 export const MemberClient = new MemberService()

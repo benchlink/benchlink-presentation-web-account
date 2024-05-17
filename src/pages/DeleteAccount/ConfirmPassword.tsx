@@ -4,7 +4,7 @@ import Button from "@/components/shared/atoms/Button";
 import Typography from "@/components/shared/atoms/Typography";
 import Input from "@/components/shared/atoms/Input";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {z} from "zod";
 import {AuthClient} from "@/api/services/Auth";
@@ -26,10 +26,7 @@ interface Props {
 const ConfirmPassword = ({uuid}: Props) => {
     const [apiStatus, setApiStatus] = useState<ApiStatus>("idle");
     const [isDeleted, setIsDeleted] = useState(false);
-
-    if (uuid === '') {
-        location.href = '/'
-    }
+    const [email, setEmail] = useState<string>('');
 
     const {
         handleSubmit,
@@ -44,6 +41,16 @@ const ConfirmPassword = ({uuid}: Props) => {
         },
     });
 
+
+    useEffect(() => {
+        if (uuid) {
+            (async () => {
+                const {email: emailFromUUID} = await AuthClient.getVerifyEmailStatus({uuid});
+                setEmail(emailFromUUID)
+            })();
+        }
+    }, [uuid]);
+
     const btnDisabled = Object.keys(errors).length > 0 || !isValid;
 
     const handleFormSubmit: SubmitHandler<PasswordFormValues>
@@ -51,38 +58,31 @@ const ConfirmPassword = ({uuid}: Props) => {
                      password,
                  }) => {
 
-        if (!uuid) {
-            setError("password", {message: "Can't find ID"})
+        if (!uuid|| email === '') {
+            setError("password", {message: "Can't find ID or expired"})
             setApiStatus("failed");
             return
         }
 
         setApiStatus("loading");
         try {
-            const [{email}, {requestId}] = await Promise.all([
-                AuthClient.getVerifyEmailStatus({uuid}),
-                AuthClient.patchVerifyEmailStatus({
-                    password,
-                    uuid,
-                })
-            ])
+            const {requestId} = await AuthClient.patchVerifyEmailStatus({
+                password,
+                uuid,
+            })
 
             if (!requestId) {
                 setError("password", {message: "This code is already expired or password is wrong"})
                 setApiStatus("failed");
                 return
-            } else if (!email) {
-                setError("password", {message: "This code is already expired or cannot find email anymore"})
-                setApiStatus("failed");
-                return
             }
 
-            const {isDeleted} = await MemberService.deleteMember({
+            const {isDeleted: isDeletedResponse} = await MemberService.deleteMember({
                 email,
                 verificationId: requestId
             });
 
-            if (!isDeleted) {
+            if (!isDeletedResponse) {
                 setError("password", {message: "Please check your password or if verification code is expired"})
                 setApiStatus("failed");
             }
@@ -125,7 +125,7 @@ const ConfirmPassword = ({uuid}: Props) => {
             ) : (
                 <>
                     <Typography type="h2">
-                        Please enter your account password for xxx@gmail.com
+                        Please enter your account password for {email}
                     </Typography>
                     <form
                         onSubmit={handleSubmit(handleFormSubmit)}
