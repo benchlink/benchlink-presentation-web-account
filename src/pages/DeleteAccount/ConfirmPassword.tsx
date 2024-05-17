@@ -1,11 +1,10 @@
 import {ApiStatus} from "@/api/types/@shared";
-import PageNotFoundIcon from "@/assets/icons/page-not-found.svg?react";
 import FormItem from "@/components/shared/FormItem";
 import Button from "@/components/shared/atoms/Button";
 import Typography from "@/components/shared/atoms/Typography";
 import Input from "@/components/shared/atoms/Input";
 import {zodResolver} from "@hookform/resolvers/zod";
-import {useEffect, useState} from "react";
+import {useState} from "react";
 import {SubmitHandler, useForm} from "react-hook-form";
 import {z} from "zod";
 import {AuthClient} from "@/api/services/Auth";
