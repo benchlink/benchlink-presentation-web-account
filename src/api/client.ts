@@ -39,7 +39,7 @@ export const axiosInstance = {
 		return axiosInterface.get<typeof payload, R>(url, payload)
 	},
 	delete<R>(url : string, payload : undefined | CommonRequest) {
-		return axiosInterface.delete<typeof payload, R>(url, payload)
+		return axiosInterface.delete<typeof payload, R>(url, {data: payload})
 	},
 	post<R>(url : string, payload : undefined | CommonRequest){
 		return axiosInterface.post<typeof payload, R>(url, payload)
